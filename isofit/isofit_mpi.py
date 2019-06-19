@@ -139,6 +139,7 @@ def main():
                 comm.Recv(states, source=worker, tag=tag)
 
                 row, col, meas, geom, configs = active[worker]
+                fm.reconfigure(*configs)
                 io.write_spectrum(row, col, states, meas, geom)
                 active[worker] = None
 
@@ -150,7 +151,6 @@ def main():
 
             if tag == tags.PREPARE:
                 row, col, meas, geom, configs = recv_io(comm, tags, status)
-                fm.reconfigure(*configs)
 
                 # No guarantee that profiling will still work with MPI.
                 if args.profile:
