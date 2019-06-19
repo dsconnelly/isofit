@@ -31,6 +31,12 @@ class Geometry:
     def __init__(self, obs=None, glt=None, loc=None, ds=None,
                  esd=None, pushbroom_column=None):
 
+        # Dave Connelly's additions. Preserving the input arguments as fields
+        # makes message passing much easier.
+        self.obs = obs
+        self.glt = glt
+        self.loc = loc
+
         # Set some benign defaults...
         self.earth_sun_file = None
         self.observer_zenith = 0
@@ -104,6 +110,6 @@ class Geometry:
 
     def sundist(self):
         '''Return the mean-relative distance to the sun as defined by the
-        day of the year.  Note that we use zero-indexed table, offset by one 
+        day of the year.  Note that we use zero-indexed table, offset by one
         from the actual cardenality, per Python conventions...'''
         return float(self.earth_sun_distance[self.day_of_year-1, 1])

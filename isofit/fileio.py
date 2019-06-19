@@ -149,10 +149,10 @@ class SpectrumFile:
         raise IOError('could not open memmap for '+self.fname)
 
     def get_frame(self, row):
-        """The frame is a 2D array, essentially a list of spectra.  The 
-            self.frames list acts as a hash table to avoid storing the 
+        """The frame is a 2D array, essentially a list of spectra.  The
+            self.frames list acts as a hash table to avoid storing the
             entire cube in memory.  So we read them or create them on an
-            as-needed basis.  When the buffer flushes via a call to 
+            as-needed basis.  When the buffer flushes via a call to
             flush_buffers, they will be deleted."""
 
         if row not in self.frames:
@@ -167,7 +167,7 @@ class SpectrumFile:
 
     def write_spectrum(self, row, col, x):
         """We write a spectrum.  If a binary format file, we simply change
-           the data cached in self.frames and defer file I/O until 
+           the data cached in self.frames and defer file I/O until
            flush_buffers is called."""
 
         if self.format == 'ASCII':
@@ -190,7 +190,7 @@ class SpectrumFile:
 
     def read_spectrum(self, row, col):
         """Get a spectrum from the frame list or ASCII file.  Note that if
-           we are an ASCII file, we have already read the single spectrum and 
+           we are an ASCII file, we have already read the single spectrum and
            return it as-is (ignoring the row/column indices)."""
 
         if self.format == 'ASCII':
@@ -218,7 +218,7 @@ class SpectrumFile:
 class IO:
 
     def check_wavelengths(self, wl):
-        """Make sure an input wavelengths align to the instrument 
+        """Make sure an input wavelengths align to the instrument
             definition"""
 
         return (len(wl) == self.fm.instrument.wl) and \
@@ -366,6 +366,9 @@ class IO:
             for col in active_cols:
                 self.iter_inds.append([row, col])
         self.iter_inds = s.array(self.iter_inds)
+
+        # Dave Connelly adds this line to allow iteration outside for loops.
+        self.iter = 0
 
     def flush_buffers(self):
         """ Write all buffered output data to disk, and erase read buffers."""
