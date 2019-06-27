@@ -27,10 +27,10 @@ from spectral.io import envi
 from scipy.io import savemat
 from common import load_config, expand_all_paths, load_spectrum
 from forward import ForwardModel
-from inverse import Inversion
+from inverse_mpi import Inversion
 from inverse_mcmc import MCMCInversion
 from geometry import Geometry
-from fileio import IO
+from fileio_mpi import IO
 import cProfile
 import logging
 from mpi4py import MPI
@@ -94,20 +94,23 @@ def main():
     tags = Tags([
         'READY', # worker -> head, ready to receive IO or EXIT
         'PREPARE', # head -> worker, signal to call recv_io
-        'STATES', # worker -> head, sizes or data from inversion
+        'WRITE', # worker -> head, to_write info from inversion
         'ROW', # head -> worker, row number
         'COL', # head -> worker, col number
-        'MEAS', # head -> worker, None or size + data of measurement
+        'MEAS', # head -> worker, None or size and data of measurement
         'GEOM', # head -> worker, obs then glt then loc
-        'SURF', # head -> worker, metadata or data about surface model configs
-        'RT', # head -> worker, metadata or data about RT model configs
-        'INS', # head -> worker, metadata or data about instrument configs
+        'CONF', # head -> worker, configs tuple
         'EXIT' # head -> worker, no more jobs to do
     ])
 
     if rank == 0:
         active = {n : None for n in range(1, size)}
         io = IO(config, fm, iv, rows, cols)
+
+        if 'radiometry_correction_file' in io.outfiles:
+            logging.warning('radiometric calibration not supported with MPI!')
+            logging.warning('all radiometric information is ignored')
+
         complete = False
 
         closed = 0
@@ -129,18 +132,16 @@ def main():
                 if not complete:
                     comm.send(None, dest=worker, tag=tags.PREPARE)
                     send_io(row, col, meas, geom, configs, comm, worker, tags)
-                    active[worker] = (row, col, meas, geom, configs)
+                    active[worker] = (row, col)
                 else:
                     comm.send(None, dest=worker, tag=tags.EXIT)
                     closed = closed + 1
 
-            elif tag == tags.STATES:
-                states = s.empty(data, dtype=s.float64)
-                comm.Recv(states, source=worker, tag=tag)
+            elif tag == tags.WRITE:
+                row, col = active[worker]
+                to_write = data
 
-                row, col, meas, geom, configs = active[worker]
-                fm.reconfigure(*configs)
-                io.write_spectrum(row, col, states, meas, geom)
+                io.write_spectrum(row, col, to_write)
                 active[worker] = None
 
     else:
@@ -158,11 +159,8 @@ def main():
                     cProfile.runctx('iv.invert(meas, geom, configs)', gbl, lcl)
 
                 else:
-                    states = iv.invert(meas, geom)
-                    x, y = states.shape
-
-                    comm.send((x, y), dest=0, tag=tags.STATES)
-                    comm.Send(states, dest=0, tag=tags.STATES)
+                    to_write = iv.invert(row, col, meas, geom, configs)
+                    comm.send(to_write, dest=0, tag=tags.WRITE)
 
             elif tag == tags.EXIT:
                 break
