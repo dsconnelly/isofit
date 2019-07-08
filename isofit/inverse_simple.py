@@ -82,12 +82,14 @@ def heuristic_atmosphere(RT, instrument, x_RT, x_instrument,  meas, geom):
         bounds = (h2os[0]+0.001, h2os[-1]-0.001)
         best = min1d(lambda h: abs(1-p(h)), bounds=bounds, method='bounded')
         x_new[ind_sv] = best.x
-    return x_RT
+
+    # Dave changes return statement.
+    return x_new
 
 
 def invert_algebraic(surface, RT, instrument, x_surface, x_RT, x_instrument,
                      meas, geom):
-    '''Inverts radiance algebraically using Lambertian assumptions to get a 
+    '''Inverts radiance algebraically using Lambertian assumptions to get a
        reflectance.'''
 
     # Get atmospheric optical parameters (possibly at high
@@ -120,10 +122,10 @@ def invert_algebraic(surface, RT, instrument, x_surface, x_RT, x_instrument,
 
 
 def estimate_Ls(coeffs, rfl, rdn, geom):
-    """Estimate the surface emission for a given state vector and 
+    """Estimate the surface emission for a given state vector and
        reflectance/radiance pair.  This is determined by the residual
-       between the upward-welling radiance due to surface and 
-       scattering, and the measured radiance.  We account for 
+       between the upward-welling radiance due to surface and
+       scattering, and the measured radiance.  We account for
        atmospheric transmission on the upward path."""
 
     rhoatm, sphalb, transm, solar_irr, coszen, transup = coeffs
