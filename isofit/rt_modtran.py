@@ -83,7 +83,7 @@ class ModtranRT(TabularRT):
             raise KeyError('I could not find the MODTRAN base directory')
 
     def load_tp6(self, infile):
-        '''Load a .tp6 file.  This contains the solar geometry.  We 
+        '''Load a .tp6 file.  This contains the solar geometry.  We
            Return cosine of mean solar zenith'''
 
         with open(infile, 'r') as f:
@@ -109,14 +109,14 @@ class ModtranRT(TabularRT):
         return szen
 
     def load_chn(self, infile, coszen):
-        """Load a .chn output file and parse critical coefficient vectors.  
+        """Load a .chn output file and parse critical coefficient vectors.
            These are:
              wl      - wavelength vector
              sol_irr - solar irradiance
              sphalb  - spherical sky albedo at surface
-             transm  - diffuse and direct irradiance along the 
+             transm  - diffuse and direct irradiance along the
                           sun-ground-sensor path
-             transup - transmission along the ground-sensor path only 
+             transup - transmission along the ground-sensor path only
            We parse them one wavelength at a time."""
 
         with open(infile) as f:
@@ -197,12 +197,12 @@ class ModtranRT(TabularRT):
         return json.dumps({"MODTRAN": param}), param
 
     def build_lut(self, rebuild=False):
-        """ Each LUT is associated with a source directory.  We build a 
-            lookup table by: 
-              (1) defining the LUT dimensions, state vector names, and the grid 
-                  of values; 
-              (2) running modtran if needed, with each MODTRAN run defining a 
-                  different point in the LUT; and 
+        """ Each LUT is associated with a source directory.  We build a
+            lookup table by:
+              (1) defining the LUT dimensions, state vector names, and the grid
+                  of values;
+              (2) running modtran if needed, with each MODTRAN run defining a
+                  different point in the LUT; and
               (3) loading the LUTs, one per key atmospheric coefficient vector,
                   into memory as VectorInterpolator objects."""
 
@@ -225,9 +225,15 @@ class ModtranRT(TabularRT):
         infilepath = os.path.join(self.lut_dir, infilename)
         outchnname = fn+'.chn'
         outchnpath = os.path.join(self.lut_dir, outchnname)
-        if not os.path.exists(infilepath) or\
-           not os.path.exists(outchnpath):
-            rebuild = True
+
+        # Dave Connelly comments modifies this condition - the names of the
+        # MODTRAN input JSON files I use for the EMIT mission are not found
+        # by the default logic.
+        # if not os.path.exists(infilepath) or\
+        #    not os.path.exists(outchnpath):
+        #     rebuild = True
+        if not os.path.exists(outchnpath):
+            rebuild=True
         else:
             # We compare the two configuration files, ignoring names and
             # wavelength paths which tend to be non-portable
@@ -263,7 +269,7 @@ class ModtranRT(TabularRT):
         return wl, sol, solzen, rhoatm, transm, sphalb, transup
 
     def wl2flt(self, wls, fwhms, outfile):
-        """ helper function to generate Gaussian distributions around the center 
+        """ helper function to generate Gaussian distributions around the center
             wavelengths """
         I = None
         sigmas = fwhms/2.355
