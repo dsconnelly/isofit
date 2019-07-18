@@ -44,7 +44,7 @@ class Inversion:
         self.lasttime = time.time()
         self.fm = forward
         self.method = 'GradientDescent'
-        self.hashtable = OrderedDict()  # Hash table for caching inverse matrices
+        self.hashtable = None
         self.max_table_size = 500
         self.windows = config['windows']  # Retrieval windows
         self.state_indep_S_hat = False
