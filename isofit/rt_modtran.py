@@ -234,18 +234,20 @@ class ModtranRT(TabularRT):
         #     rebuild = True
         if not os.path.exists(outchnpath):
             rebuild=True
-        else:
-            # We compare the two configuration files, ignoring names and
-            # wavelength paths which tend to be non-portable
-            with open(infilepath, 'r') as fin:
-                current_config = json.load(fin)['MODTRAN']
-                current_config[0]['MODTRANINPUT']['NAME'] = ''
-                modtran_config[0]['MODTRANINPUT']['NAME'] = ''
-                current_config[0]['MODTRANINPUT']['SPECTRAL']['FILTNM'] = ''
-                modtran_config[0]['MODTRANINPUT']['SPECTRAL']['FILTNM'] = ''
-                current_str = json.dumps(current_config)
-                modtran_str = json.dumps(current_config)
-                rebuild = (modtran_str.strip() != current_str.strip())
+
+        # Again, Dave Connelly removes this block.
+        # else:
+        #     # We compare the two configuration files, ignoring names and
+        #     # wavelength paths which tend to be non-portable
+        #     with open(infilepath, 'r') as fin:
+        #         current_config = json.load(fin)['MODTRAN']
+        #         current_config[0]['MODTRANINPUT']['NAME'] = ''
+        #         modtran_config[0]['MODTRANINPUT']['NAME'] = ''
+        #         current_config[0]['MODTRANINPUT']['SPECTRAL']['FILTNM'] = ''
+        #         modtran_config[0]['MODTRANINPUT']['SPECTRAL']['FILTNM'] = ''
+        #         current_str = json.dumps(current_config)
+        #         modtran_str = json.dumps(current_config)
+        #         rebuild = (modtran_str.strip() != current_str.strip())
 
         if not rebuild:
             raise FileExistsError('File exists')
