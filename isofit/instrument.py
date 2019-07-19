@@ -35,9 +35,9 @@ wl_tol = 0.01
 class Instrument:
 
     def __init__(self, config):
-        """A model of the spectrometer instrument, including spectral 
+        """A model of the spectrometer instrument, including spectral
         response and noise covariance matrices. Noise is typically calculated
-        from a parametric model, fit for the specific instrument.  It is a 
+        from a parametric model, fit for the specific instrument.  It is a
         function of the radiance level."""
 
         # If needed, skip first index column and/or convert to nanometers
@@ -78,6 +78,19 @@ class Instrument:
             # is signal-independnet and applied uniformly to all wavelengths
             self.model_type = 'SNR'
             self.snr = float(config['SNR'])
+
+        elif 'SNR_values' in config:
+
+            # Dave Connelly adds this option to have distinct SNR values for
+            # the ranges marked by the values in config['SNR_bins'].
+            self.model_type = 'bins'
+            self.snr = s.zeros(self.wl_init.shape)
+
+            bins = [0] + [s.argmin(abs(x - self.wl_init))
+                for x in config['SNR_bins']] + [self.wl_init.shape[0]]
+            for i in range(0, len(bins) - 1):
+                self.snr[bins[i]:bins[i + 1]] = config['SNR_values'][i]
+
 
         elif 'parametric_noise_file' in config:
 
@@ -180,7 +193,7 @@ class Instrument:
            Input: meas, the instrument measurement
            Returns: Sy, the measurement error covariance due to instrument noise"""
 
-        if self.model_type == 'SNR':
+        if self.model_type in ['SNR', 'bins']:
             bad = meas < 1e-5
             meas[bad] = 1e-5
             nedl = (1.0 / self.snr) * meas
@@ -200,7 +213,7 @@ class Instrument:
             return C / s.sqrt(self.integrations)
 
     def dmeas_dinstrument(self, x_instrument, wl_hi, rdn_hi):
-        """Jacobian of measurement  with respect to the instrument 
+        """Jacobian of measurement  with respect to the instrument
            free parameter state vector.  We use finite differences for now."""
 
         dmeas_dinstrument = s.zeros((self.n_chan, self.n_state), dtype=float)
@@ -220,7 +233,7 @@ class Instrument:
            that are unknown and not retrieved, i.e. the inevitable persisting
            uncertainties in instrument spectral and radiometric calibration.
            Input: meas, a vector of size n_chan
-           Returns: Kb_instrument, a matrix of size 
+           Returns: Kb_instrument, a matrix of size
             [n_measurements x nb_instrument]"""
 
         # Uncertainty due to radiometric calibration
