@@ -308,7 +308,10 @@ class Inversion:
                         'spectral_calibration_file':
                         cal,
                         'posterior_uncertainty_file':
-                        s.sqrt(s.diag(S_hat))}
+                        s.sqrt(s.diag(S_hat)),
+                        'posterior_covariance_matrix':
+                        S_hat
+                    }
 
             return to_write
 
