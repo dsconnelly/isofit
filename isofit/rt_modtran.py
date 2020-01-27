@@ -232,8 +232,7 @@ class ModtranRT(TabularRT):
         # if not os.path.exists(infilepath) or\
         #    not os.path.exists(outchnpath):
         #     rebuild = True
-        if not os.path.exists(outchnpath):
-            rebuild=True
+        rebuild = not os.path.exists(outchnpath)
 
         # Again, Dave Connelly removes this block.
         # else:
