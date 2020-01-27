@@ -309,7 +309,7 @@ class Inversion:
                         cal,
                         'posterior_uncertainty_file':
                         s.sqrt(s.diag(S_hat)),
-                        'posterior_covariance_matrix':
+                        'covariance_matrix_file':
                         S_hat
                     }
 

@@ -369,10 +369,10 @@ class IO:
 
         # Dave Connelly adds these lines to allow writing of full posterior
         # covariance matrices.
-        if 'posterior_covariance_matrix' in self.output:
-            self.covmat = self.output['posterior_covariance_matrix']
+        if 'covariance_matrix_file' in self.output:
+            self.covmat = self.output['covariance_matrix_file']
             self.mm = s.memmap(self.covmat, dtype='float32', mode='w+',
-                shape=(self.n_rows, self.n_cols, self.n_bands, self.n_bands))
+                shape=(self.n_rows, self.n_cols, self.n_sv, self.n_sv))
 
         # Dave Connelly adds this line to allow iteration outside for loops.
         self.iter = 0
@@ -446,12 +446,13 @@ class IO:
             if (self.writes % flush_rate) == 0:
                 self.outfiles[product].flush_buffers()
 
-        if 'posterior_covariance_matrix' in self.output:
+        if 'covariance_matrix_file' in self.output:
             if (self.writes & flush_rate) == 0:
                 del self.mm
-                self.mm = s.memmap(self.covmat, mode='r+')
+                self.mm = s.memmap(self.covmat, dtype='float32', mode='r+',
+                    shape=(self.n_rows, self.n_cols, self.n_sv, self.n_sv))
 
-            self.mm[row, col] = to_write['posterior_covariance_matrix']
+            self.mm[row, col] = to_write['covariance_matrix_file']
 
         # Special case! samples file is matlab format.
         if 'mcmc_samples_file' in self.output:
