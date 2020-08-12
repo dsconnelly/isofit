@@ -447,7 +447,7 @@ class IO:
                 self.outfiles[product].flush_buffers()
 
         if 'covariance_matrix_file' in self.output:
-            if (self.writes & flush_rate) == 0:
+            if (self.writes % flush_rate) == 0:
                 del self.mm
                 self.mm = s.memmap(self.covmat, dtype='float32', mode='r+',
                     shape=(self.n_rows, self.n_cols, self.n_sv, self.n_sv))

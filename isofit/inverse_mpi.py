@@ -227,7 +227,6 @@ class Inversion:
         self.fm.reconfigure(*configs)
 
         if len(states) == 0:
-
             # Write a bad data flag
             atm_bad = s.zeros(len(self.fm.statevec)) * -9999.0
             state_bad = s.zeros(len(self.fm.statevec)) * -9999.0
@@ -242,7 +241,8 @@ class Inversion:
                         'algebraic_inverse_file': data_bad,
                         'atmospheric_coefficients_file': atm_bad,
                         'spectral_calibration_file': data_bad,
-                        'posterior_uncertainty_file': state_bad}
+                        'posterior_uncertainty_file': state_bad,
+                        'covariance_matrix_file' : s.diag(state_bad)}
 
         else:
             # The inversion returns a list of states, which are
@@ -313,7 +313,7 @@ class Inversion:
                         S_hat
                     }
 
-            return to_write
+        return to_write
 
     def forward_uncertainty(self, x, meas, geom):
         """Converged estimates of path radiance, radiance, reflectance

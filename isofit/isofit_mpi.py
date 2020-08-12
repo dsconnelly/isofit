@@ -23,6 +23,7 @@ import sys
 import json
 import argparse
 import scipy as s
+import datetime as dt
 from spectral.io import envi
 from scipy.io import savemat
 from common import load_config, expand_all_paths, load_spectrum
@@ -112,6 +113,9 @@ def main():
             logging.warning('all radiometric information is ignored')
 
         complete = False
+        rows_done = set()
+        with open('/home/davidsc/isoout.txt', 'w') as f:
+            pass
 
         closed = 0
         while closed < size - 1:
@@ -130,6 +134,12 @@ def main():
                     complete = True
 
                 if not complete:
+                    if row not in rows_done:
+                        with open('/home/davidsc/isoout.txt', 'a') as f:
+                            f.write(f'starting row {row} at {str(dt.datetime.now())}\n')
+
+                        rows_done.add(row)
+
                     comm.send(None, dest=worker, tag=tags.PREPARE)
                     send_io(row, col, meas, geom, configs, comm, worker, tags)
                     active[worker] = (row, col)
